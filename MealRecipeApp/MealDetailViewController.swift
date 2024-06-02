@@ -9,21 +9,27 @@ import UIKit
 
 class MealDetailViewController: UIViewController {
 
+    var meal: Meal?
+    @IBOutlet weak var imageViewMeal: UIImageView!
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+            
+        setUpUI()
     }
-
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
+    
+    func setUpUI() {
+            if let meal = meal {
+                self.navigationItem.title = meal.name
+                DispatchQueue.global().async {
+                    if let data = try? Data(contentsOf: meal.thumbnailURL) {
+                        // Update UI on the main queue
+                        DispatchQueue.main.async {
+                            self.imageViewMeal.image = UIImage(data: data)
+                        }
+                    }
+                }
+            } else {
+                print("Meal is nil")
+            }
+        }
 }
