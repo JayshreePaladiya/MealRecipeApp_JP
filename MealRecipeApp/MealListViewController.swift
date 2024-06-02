@@ -82,23 +82,28 @@ class MealListViewController: UIViewController, UITableViewDataSource, UITableVi
     }
     
     func showMealDetail(_ meal: Meal) {
-        guard let imageUrl = URL(string: meal.thumbnailURL.absoluteString) else {
+        guard let url = URL(string: "https://themealdb.com/api/json/v1/1/lookup.php?i=\(meal.idMeal)") else {
             return
         }
-        
-        DispatchQueue.global().async { [self] in
-            if let data = try? Data(contentsOf: imageUrl) {
-               
-                if let image = UIImage(data: data) {
-                    
-                    DispatchQueue.main.async { [weak self] in
-                       
-                        let mealDetailView = MealDetailView(meal: meal, image: image)
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data, error == nil else {
+                print("Error fetching meal details: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+
+            do {
+                let result = try JSONDecoder().decode(MealDetailResponse.self, from: data)
+                if let mealDetail = result.meals.first {
+                    DispatchQueue.main.async {
+                        let mealDetailView = MealDetailView(meal: meal, mealDetail: mealDetail)
                         let hostingController = UIHostingController(rootView: mealDetailView)
-                        self?.navigationController?.pushViewController(hostingController, animated: true)
+                        self.navigationController?.pushViewController(hostingController, animated: true)
                     }
                 }
+            } catch {
+                print("Error decoding meal details: \(error.localizedDescription)")
             }
-        }
+        }.resume()
     }
+
 }

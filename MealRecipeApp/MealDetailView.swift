@@ -6,23 +6,140 @@
 //
 
 import SwiftUI
+struct MealDetailResponse: Codable {
+    let meals: [MealDetail]
+}
 
-struct MealDetailView: View {
-    var meal: Meal
-    var image: UIImage
+struct MealDetail: Codable {
+    let strInstructions: String
+    let strIngredient1: String?
+    let strIngredient2: String?
+    let strIngredient3: String?
+    let strIngredient4: String?
+    let strIngredient5: String?
+    let strIngredient6: String?
+    let strIngredient7: String?
+    let strIngredient8: String?
+    let strIngredient9: String?
+    let strIngredient10: String?
+    let strIngredient11: String?
+    let strIngredient12: String?
+    let strIngredient13: String?
+    let strIngredient14: String?
+    let strIngredient15: String?
+    let strIngredient16: String?
+    let strIngredient17: String?
+    let strIngredient18: String?
+    let strIngredient19: String?
+    let strIngredient20: String?
+    let strMeasure1: String?
+    let strMeasure2: String?
+    let strMeasure3: String?
+    let strMeasure4: String?
+    let strMeasure5: String?
+    let strMeasure6: String?
+    let strMeasure7: String?
+    let strMeasure8: String?
+    let strMeasure9: String?
+    let strMeasure10: String?
+    let strMeasure11: String?
+    let strMeasure12: String?
+    let strMeasure13: String?
+    let strMeasure14: String?
+    let strMeasure15: String?
+    let strMeasure16: String?
+    let strMeasure17: String?
+    let strMeasure18: String?
+    let strMeasure19: String?
+    let strMeasure20: String?
     
-    var body: some View {
-        VStack {
-            Text(meal.name)
-                .font(.title)
-            
-            Image(uiImage: image)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 200, height: 200) // Adjust the frame size as needed
+    func getIngredientsWithMeasurements() -> [(String, String)] {
+        let ingredients = [
+            (strIngredient1, strMeasure1),
+            (strIngredient2, strMeasure2),
+            (strIngredient3, strMeasure3),
+            (strIngredient4, strMeasure4),
+            (strIngredient5, strMeasure5),
+            (strIngredient6, strMeasure6),
+            (strIngredient7, strMeasure7),
+            (strIngredient8, strMeasure8),
+            (strIngredient9, strMeasure9),
+            (strIngredient10, strMeasure10),
+            (strIngredient11, strMeasure11),
+            (strIngredient12, strMeasure12),
+            (strIngredient13, strMeasure13),
+            (strIngredient14, strMeasure14),
+            (strIngredient15, strMeasure15),
+            (strIngredient16, strMeasure16),
+            (strIngredient17, strMeasure17),
+            (strIngredient18, strMeasure18),
+            (strIngredient19, strMeasure19),
+            (strIngredient20, strMeasure20)
+        ]
+        
+        return ingredients.compactMap { ingredient, measure in
+            guard let ingredient = ingredient, !ingredient.isEmpty,
+                  let measure = measure, !measure.isEmpty else {
+                return nil
+            }
+            return (ingredient, measure)
         }
-        .navigationBarTitle(Text(meal.name), displayMode: .inline)
     }
 }
 
 
+struct MealDetailView: View {
+    var meal: Meal
+    var mealDetail: MealDetail
+    @State private var image: UIImage? // Use @State for dynamic changes
+    
+    var body: some View {
+        ScrollView {
+            VStack {
+                if let image = image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 200, height: 200)
+                } else {
+                    Text("Loading Image...")
+                }
+                
+                Text(meal.name)
+                    .font(.title)
+                
+                Text("Instructions: \(mealDetail.strInstructions)")
+                    .padding()
+                
+                VStack(alignment: .leading) {
+                    Text("Ingredients:")
+                        .font(.headline)
+                    ForEach(mealDetail.getIngredientsWithMeasurements(), id: \.0) { ingredient, measurement in
+                        Text("\(ingredient): \(measurement)")
+                    }
+                }
+                .padding()
+            }
+        }
+        .onAppear {
+            loadImage()
+        }
+        .navigationBarTitle(Text(meal.name), displayMode: .inline)
+    }
+    
+    func loadImage() {
+        guard let imageUrl = URL(string: meal.thumbnailURL.absoluteString) else {
+            return
+        }
+        
+        DispatchQueue.global().async {
+            if let data = try? Data(contentsOf: imageUrl) {
+                if let image = UIImage(data: data) {
+                    DispatchQueue.main.async {
+                        self.image = image
+                    }
+                }
+            }
+        }
+    }
+}
